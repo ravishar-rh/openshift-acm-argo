@@ -1,0 +1,26 @@
+# Argo CD Application: deploy ACM (Advanced Cluster Management) operator + MultiClusterHub
+# on the cluster where Argo CD runs (in-cluster).
+#
+# Apply with: oc apply -f bootstrap/acm-hub-application.yaml
+# Ensure OpenShift GitOps is installed and the repo is accessible.
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: acm-hub
+  namespace: openshift-gitops
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ravishar-rh/openshift-acm-argo.git
+    targetRevision: HEAD
+    path: acm-hub
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: open-cluster-management
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

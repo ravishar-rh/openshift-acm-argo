@@ -13,7 +13,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/ravishar-rh/openshift-acm-argo.git
-    targetRevision: HEAD
+    targetRevision: initial_testing
     path: acm-hub
   destination:
     server: https://kubernetes.default.svc

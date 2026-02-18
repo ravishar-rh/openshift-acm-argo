@@ -36,3 +36,31 @@ The playbook will:
 oc get pods -n openshift-gitops
 oc get route openshift-gitops-server -n openshift-gitops
 ```
+
+## Deploy acm-hub ApplicationSet (ACM operator via Argo CD)
+
+Applies the `acm-hub` ApplicationSet so Argo CD installs the ACM (Advanced Cluster Management) operator and MultiClusterHub on the cluster(s) defined in `config/acm-hubs.yaml`.
+
+**Prerequisites**
+
+- OpenShift GitOps (Argo CD) installed on the cluster
+- `oc` CLI logged in to the target cluster
+
+**Usage**
+
+```bash
+# From repo root – apply the ApplicationSet
+oc apply -f bootstrap/acm-hub-application-set.yaml
+
+# Or use the Ansible playbook (checks cluster + namespace, optional confirm)
+ansible-playbook automation/deploy-acm-hub-appset.yaml
+ansible-playbook automation/deploy-acm-hub-appset.yaml -e "confirm_deploy=yes"
+```
+
+**Verify**
+
+```bash
+oc get applicationset -n openshift-gitops
+oc get applications -n openshift-gitops
+oc get pods -n open-cluster-management   # after Argo CD syncs
+```

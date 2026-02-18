@@ -1,0 +1,55 @@
+---
+# Deploy the acm-hub ApplicationSet so Argo CD installs the ACM operator + MultiClusterHub.
+# Requires OpenShift GitOps (Argo CD) to be installed and oc logged in to the cluster.
+#
+# Run from repo root:
+#   ansible-playbook automation/deploy-acm-hub-appset.yaml
+#
+# Skip confirmation:
+#   ansible-playbook automation/deploy-acm-hub-appset.yaml -e "confirm_deploy=yes"
+
+- name: Deploy acm-hub ApplicationSet
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  vars:
+    appset_file: "{{ playbook_dir }}/../bootstrap/acm-hub-application-set.yaml"
+
+  tasks:
+    - name: Check that oc is available
+      ansible.builtin.command: which oc
+      register: oc_which
+      changed_when: false
+      failed_when: oc_which.rc != 0
+
+    - name: Check cluster login
+      ansible.builtin.command: oc whoami
+      register: oc_whoami
+      changed_when: false
+      failed_when: oc_whoami.rc != 0
+
+    - name: Check openshift-gitops namespace exists
+      ansible.builtin.command: oc get namespace openshift-gitops
+      register: ns_check
+      changed_when: false
+      failed_when: ns_check.rc != 0
+
+    - name: Pause for confirmation
+      ansible.builtin.pause:
+        prompt: "Apply acm-hub ApplicationSet on this cluster? Press Enter to continue, Ctrl+C to abort"
+      when: confirm_deploy is not defined or not confirm_deploy
+
+    - name: Apply acm-hub ApplicationSet
+      ansible.builtin.command: oc apply -f "{{ appset_file }}"
+      register: apply_result
+      changed_when: "'configured' in apply_result.stdout or 'created' in apply_result.stdout"
+
+    - name: Show result
+      ansible.builtin.debug:
+        msg:
+          - "acm-hub ApplicationSet applied."
+          - "Argo CD will create Application(s) from config/acm-hubs.yaml and deploy ACM operator + MultiClusterHub."
+          - "Check: oc get applicationset -n openshift-gitops"
+          - "Check: oc get applications -n openshift-gitops"
+          - "ACM resources: oc get pods -n open-cluster-management (after sync)"

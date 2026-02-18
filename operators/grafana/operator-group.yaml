@@ -1,0 +1,9 @@
+# OperatorGroup for Grafana operator (cluster-wide).
+# Note: openshift-operators often has an existing OperatorGroup on OpenShift.
+# If apply fails with "multiple operator groups", remove this from kustomization.yaml.
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: grafana-operator-group
+  namespace: openshift-operators
+spec: {}

@@ -1,0 +1,7 @@
+# ACM operator is cluster-scoped; use empty spec for AllNamespaces.
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: advanced-cluster-management-operator-group
+  namespace: open-cluster-management
+spec: {}

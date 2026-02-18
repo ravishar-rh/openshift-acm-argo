@@ -1,0 +1,125 @@
+---
+# Deploy OpenShift GitOps operator on the cluster you are connected to.
+# Uses 'oc' (current context) to apply the operator manifests.
+#
+# Run from repo root:
+#   ansible-playbook automation/deploy-openshift-gitops.yaml
+#
+# Skip confirmation (e.g. CI):
+#   ansible-playbook automation/deploy-openshift-gitops.yaml -e "confirm_deploy=yes"
+
+- name: Deploy OpenShift GitOps operator
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  vars:
+    operator_path: "{{ playbook_dir }}/../operators/openshift-gitops"
+    namespace: openshift-gitops
+    subscription_name: openshift-gitops-operator
+    wait_timeout_seconds: 600
+
+  tasks:
+    - name: Check that oc is available
+      ansible.builtin.command: which oc
+      register: oc_which
+      changed_when: false
+      failed_when: oc_which.rc != 0
+
+    - name: Get current cluster (oc whoami --show-server)
+      ansible.builtin.command: oc whoami --show-server
+      register: cluster_server
+      changed_when: false
+
+    - name: Get current context
+      ansible.builtin.command: oc config current-context
+      register: cluster_context
+      changed_when: false
+      failed_when: false
+
+    - name: Get current user
+      ansible.builtin.command: oc whoami
+      register: cluster_user
+      changed_when: false
+
+    - name: Display target cluster
+      ansible.builtin.debug:
+        msg:
+          - "Target cluster:"
+          - "  Server:  {{ cluster_server.stdout }}"
+          - "  Context: {{ cluster_context.stdout | default('<none>') }}"
+          - "  User:    {{ cluster_user.stdout }}"
+
+    - name: Check if OpenShift GitOps operator is already deployed
+      ansible.builtin.command: oc get subscription {{ subscription_name }} -n {{ namespace }} -o name
+      register: gitops_subscription_check
+      changed_when: false
+      failed_when: false
+
+    - name: Set fact when OpenShift GitOps is already deployed
+      ansible.builtin.set_fact:
+        gitops_already_deployed: "{{ gitops_subscription_check.rc == 0 and gitops_subscription_check.stdout | length > 0 }}"
+
+    - name: OpenShift GitOps already deployed on this cluster, skipping
+      ansible.builtin.debug:
+        msg: "OpenShift GitOps operator is already deployed in namespace '{{ namespace }}'. Doing nothing."
+      when: gitops_already_deployed
+
+    - name: Pause for deployment confirmation (press Enter to continue, Ctrl+C to abort)
+      ansible.builtin.pause:
+        prompt: "Deploy OpenShift GitOps operator on this cluster? Press Enter to continue, Ctrl+C to abort"
+      when: >-
+        not gitops_already_deployed
+        and (confirm_deploy is not defined or not confirm_deploy)
+
+    - name: Ensure operator manifest path exists
+      ansible.builtin.stat:
+        path: "{{ operator_path }}"
+      register: operator_path_stat
+      when: not gitops_already_deployed
+
+    - name: Fail if operator path not found
+      ansible.builtin.fail:
+        msg: "Operator path not found: {{ operator_path }}"
+      when: not gitops_already_deployed and not operator_path_stat.stat.isdir
+
+    - name: Apply OpenShift GitOps operator manifests (Namespace, OperatorGroup, Subscription)
+      ansible.builtin.command: oc apply -k "{{ operator_path }}"
+      register: oc_apply
+      changed_when: "'configured' in oc_apply.stdout or 'created' in oc_apply.stdout"
+      when: not gitops_already_deployed
+
+    - name: Wait for subscription to have installed CSV
+      ansible.builtin.shell: |
+        for i in $(seq 1 30); do
+          csv=$(oc get subscription {{ subscription_name }} -n {{ namespace }} -o jsonpath='{.status.installedCSV}' 2>/dev/null)
+          if [ -n "$csv" ]; then echo "$csv"; exit 0; fi
+          sleep 10
+        done
+        exit 1
+      register: csv_result
+      failed_when: false
+      changed_when: false
+      when: not gitops_already_deployed
+
+    - name: Wait for CSV to succeed
+      ansible.builtin.command: >
+        oc wait --for=jsonpath='{.status.phase}'=Succeeded
+        csv/{{ csv_result.stdout }}
+        -n {{ namespace }}
+        --timeout={{ wait_timeout_seconds }}s
+      when: >-
+        not gitops_already_deployed
+        and csv_result.rc == 0
+        and csv_result.stdout | length > 0
+      register: oc_wait
+      failed_when: false
+      changed_when: false
+
+    - name: Deployment complete
+      ansible.builtin.debug:
+        msg:
+          - "OpenShift GitOps operator is deployed in namespace '{{ namespace }}'."
+          - "Check status: oc get pods -n {{ namespace }}"
+          - "Argo CD route: oc get route openshift-gitops-server -n {{ namespace }}"
+      when: not gitops_already_deployed

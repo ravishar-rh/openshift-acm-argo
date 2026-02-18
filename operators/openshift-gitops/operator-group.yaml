@@ -1,0 +1,8 @@
+# OpenShift GitOps does not support OwnNamespace install mode; it requires
+# AllNamespaces (cluster-wide). Use an empty spec so OLM uses AllNamespaces.
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: openshift-gitops-operator-group
+  namespace: openshift-gitops
+spec: {}

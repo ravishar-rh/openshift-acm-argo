@@ -1,0 +1,15 @@
+# MultiClusterHub instance - deploys the ACM hub components.
+# Created after the ACM operator is installed. The hub is used to manage
+# and automate deployment of new clusters (import, provision, policies).
+---
+apiVersion: operator.open-cluster-management.io/v1
+kind: MultiClusterHub
+metadata:
+  name: multiclusterhub
+  namespace: open-cluster-management
+spec:
+  availabilityConfig: High
+  enableClusterBackup: false
+  separateCertificateManagement: false
+  # Uncomment to customize:
+  # imagePullSecret: pull-secret

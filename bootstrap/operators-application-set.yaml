@@ -1,0 +1,32 @@
+# ApplicationSet: one Application per operator in config/operators.yaml
+# Deploys cluster operators in an automated fashion from Git.
+# Update repoURL to your Git repo.
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-operators
+  namespace: openshift-gitops
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/your-org/ansible-automation-highmark-customer
+        revision: HEAD
+        files:
+          - path: config/operators.yaml
+  template:
+    metadata:
+      name: 'operator-{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/your-org/ansible-automation-highmark-customer
+        targetRevision: HEAD
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

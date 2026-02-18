@@ -1,0 +1,20 @@
+# List of cluster operators for Git File Generator (Application Set).
+# Each entry generates one Argo CD Application that deploys the operator.
+# Path is relative to repo root (e.g. operators/<name>/).
+#
+# Template variables: name, path, namespace, channel (and any custom keys)
+---
+- name: openshift-pipelines
+  path: operators/openshift-pipelines
+  namespace: openshift-pipelines
+  channel: stable
+
+- name: openshift-gitops
+  path: operators/openshift-gitops
+  namespace: openshift-gitops
+  channel: latest
+
+- name: red-hat-codeready-workspaces
+  path: operators/red-hat-codeready-workspaces
+  namespace: openshift-workspaces
+  channel: latest

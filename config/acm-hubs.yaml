@@ -1,0 +1,14 @@
+# List of clusters that will run ACM (Advanced Cluster Management) as the hub.
+# One Application per entry: deploys ACM operator + MultiClusterHub to that cluster.
+# The hub will be used later to automate deployment of new managed clusters.
+#
+# Template variables: hub_name, url, namespace
+---
+- hub_name: hub
+  url: https://kubernetes.default.svc
+  namespace: open-cluster-management
+
+# Example: dedicated hub cluster (ensure it is registered in Argo CD)
+# - hub_name: acm-hub-prod
+#   url: https://api.acm-hub.example.com:6443
+#   namespace: open-cluster-management

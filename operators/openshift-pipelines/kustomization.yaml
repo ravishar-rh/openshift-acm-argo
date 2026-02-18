@@ -1,0 +1,9 @@
+# OpenShift Pipelines operator (Tekton)
+# Customize namespace and subscription as needed.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: openshift-pipelines
+resources:
+  - namespace.yaml
+  - operator-group.yaml
+  - subscription.yaml

@@ -1,0 +1,32 @@
+# ApplicationSet: one Application per cluster in config/clusters.yaml
+# Use this to automate deployment of the same app(s) to multiple clusters.
+# Update repoURL to your Git repo and ensure clusters are registered in Argo CD.
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-deployments
+  namespace: openshift-gitops
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/your-org/ansible-automation-highmark-customer
+        revision: HEAD
+        files:
+          - path: config/clusters.yaml
+  template:
+    metadata:
+      name: 'cluster-{{cluster}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/your-org/ansible-automation-highmark-customer
+        targetRevision: HEAD
+        path: clusters/base
+      destination:
+        server: '{{url}}'
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

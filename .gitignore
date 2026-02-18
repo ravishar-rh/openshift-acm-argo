@@ -1,0 +1,31 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Kustomize / Helm
+*.orig
+*.rej
+
+# Secrets (do not commit)
+*.key
+*.pem
+*-secret.yaml
+secrets/
+
+# Env / local overrides
+.env
+.env.*
+*.local.yaml
+
+# Temporary
+tmp/
+temp/
+*.tmp
+*.log

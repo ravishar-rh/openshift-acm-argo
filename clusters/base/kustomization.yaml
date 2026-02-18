@@ -1,0 +1,8 @@
+# Base resources deployed to every cluster listed in config/clusters.yaml
+# Add common namespaces, ConfigMaps, or app manifests here.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources: []
+# Example:
+# - namespace.yaml
+# - ../overlays/common

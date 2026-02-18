@@ -1,0 +1,21 @@
+# List of clusters for Git Generator (Application Set).
+# Add or remove entries to automate deployment to new clusters.
+# Ensure each cluster is registered in Argo CD (e.g. via 'argocd cluster add' or ACM).
+#
+# Template variables: cluster, url, namespace (and any custom keys you add)
+---
+# - cluster: dev
+#   url: https://api.dev.openshift.example.com:6443
+#   namespace: gitops-apps
+
+# - cluster: staging
+#   url: https://api.staging.openshift.example.com:6443
+#   namespace: gitops-apps
+
+- cluster: testing
+  url: https://api.cluster-kqmc8.kqmc8.sandbox5462.opentlc.com:6443
+  namespace: gitops-apps
+# Example: in-cluster (same cluster as OpenShift GitOps)
+# - cluster: hub
+#   url: https://kubernetes.default.svc
+#   namespace: gitops-apps

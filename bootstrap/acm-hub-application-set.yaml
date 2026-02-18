@@ -1,0 +1,38 @@
+# ApplicationSet: deploy ACM (Advanced Cluster Management) hub on target cluster(s).
+# One Application per entry in config/acm-hubs.yaml. Each target gets the ACM
+# operator + MultiClusterHub. The hub is used later to automate deployment
+# of new clusters (create, import, policies).
+#
+# Update repoURL to your Git repo. Ensure the target cluster is registered in Argo CD.
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: acm-hub
+  namespace: openshift-gitops
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/your-org/ansible-automation-highmark-customer
+        revision: HEAD
+        files:
+          - path: config/acm-hubs.yaml
+  template:
+    metadata:
+      name: 'acm-hub-{{hub_name}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/your-org/ansible-automation-highmark-customer
+        targetRevision: HEAD
+        path: acm-hub
+      destination:
+        server: '{{url}}'
+        namespace: open-cluster-management
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        # Optional: sync wave so MultiClusterHub is created after operator installs CRD
+        syncOptions:
+          - CreateNamespace=true

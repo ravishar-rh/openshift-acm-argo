@@ -10,7 +10,7 @@ metadata:
 spec:
   generators:
     - git:
-        repoURL: https://github.com/your-org/ansible-automation-highmark-customer
+        repoURL: https://github.com/ravishar-rh/openshift-acm-argo.git
         revision: HEAD
         files:
           - path: config/clusters.yaml
@@ -20,7 +20,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/your-org/ansible-automation-highmark-customer
+        repoURL: https://github.com/ravishar-rh/openshift-acm-argo.git
         targetRevision: HEAD
         path: clusters/base
       destination:
